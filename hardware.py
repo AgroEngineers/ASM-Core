@@ -3,12 +3,11 @@ from enum import Enum
 import re
 from typing import Optional
 
-import cv2
 import serial
 import serial.tools.list_ports
 
-import aiController
-import backendController
+from ai import *
+import backend
 
 
 # ENUMS
@@ -16,6 +15,8 @@ class MotorState(Enum):
     STOP = 's'
     BACKWARD = 'b'
     FORWARD = 'f'
+
+
 class ServoState(Enum):
     OPEN = 'o'
     LEFT = 'l'
@@ -63,6 +64,7 @@ class Hardware:
     @property
     def motor(self) -> MotorState:
         return self._motor_state
+
     @motor.setter
     def motor(self, value: MotorState):
         self._motor_state = value
@@ -71,6 +73,7 @@ class Hardware:
     @property
     def servo_1(self) -> ServoState:
         return self._servo_1_state
+
     @servo_1.setter
     def servo_1(self, value: ServoState):
         self._servo_1_state = value
@@ -79,6 +82,7 @@ class Hardware:
     @property
     def servo_2(self) -> ServoState:
         return self._servo_2_state
+
     @servo_2.setter
     def servo_2(self, value: ServoState):
         self._servo_2_state = value
@@ -87,10 +91,13 @@ class Hardware:
     @property
     def servo_3(self) -> ServoState:
         return self._servo_3_state
+
     @servo_3.setter
     def servo_3(self, value: ServoState):
         self._servo_3_state = value
         self.__sync()
+
+
 class Camera:
     def __init__(self, id: int):
         self.camera = cv2.VideoCapture(id)
@@ -109,7 +116,8 @@ class Camera:
                 if not success:
                     break
                 else:
-                    aiController.think(frame)
+                    result = think(frame)
+                    print(result)
                     ret, buffer = cv2.imencode('.jpg', frame)
                     frame_bytes = buffer.tobytes()
 
@@ -118,10 +126,11 @@ class Camera:
         finally:
             print("Viewport stream closed")
 
+
 machine: Optional[Hardware] = None
 camera: Optional[Camera] = None
 
-# METHODS
+
 def available_ports():
     devices = []
 
@@ -131,9 +140,11 @@ def available_ports():
 
     return devices
 
+
 def is_machine_connected() -> bool:
     global machine
     return machine is not None
+
 
 def is_camera_connected() -> bool:
     global camera
@@ -147,9 +158,10 @@ async def connect_machine(port):
         raise ValueError("Machine already connected")
 
     machine = Hardware(port)
-    await backendController.Socket.send({
+    await backend.Socket.send({
         "type": "connectedHw",
     })
+
 
 async def connect_camera(port):
     global camera
@@ -158,9 +170,10 @@ async def connect_camera(port):
         raise ValueError("Camera already connected")
 
     camera = Camera(int(port))
-    await backendController.Socket.send({
+    await backend.Socket.send({
         "type": "connectedCam",
     })
+
 
 def abadon():
     global machine, camera
@@ -172,6 +185,7 @@ def abadon():
         del camera
         camera = None
 
+
 async def sync(data):
     global machine
     machine.motor = MotorState(data['motor'])
@@ -179,7 +193,8 @@ async def sync(data):
     machine.servo_2 = ServoState(data['servo_2'])
     machine.servo_3 = ServoState(data['servo_3'])
 
-    await backendController.Socket.send(machine.to_json())
+    await backend.Socket.send(machine.to_json())
+
 
 def get_cameras():
     cams = []

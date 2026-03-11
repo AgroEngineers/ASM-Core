@@ -1,10 +1,16 @@
+import os
+import pathlib
+import shutil
+
 from fastapi import *
 
-import hardwareController
-from hardwareController import *
+import config
+import hardware
+from hardware import *
 from starlette.responses import StreamingResponse
 from typing import Optional
 from json import loads
+import ai
 
 app = FastAPI()
 
@@ -35,9 +41,28 @@ async def websocket_endpoint(ws: WebSocket):
     finally:
         Socket.close()
 
+@app.post("/upload")
+async def upload_model(
+    name: str = Form(...),
+    model: UploadFile = File(...),
+    labels: UploadFile = File(...),
+):
+    os.makedirs("models", exist_ok=True)
+
+    model_path = f"models/{name}.tflite"
+    labels_path = f"models/{name}.txt"
+
+    with open(model_path, "wb") as f:
+        shutil.copyfileobj(model.file, f)
+
+    with open(labels_path, "wb") as f:
+        shutil.copyfileobj(labels.file, f)
+
+    return {"status": "ok", "name": name}
+
 async def proceed_ws(data):
     if data["type"] == "mode":
-        aiController.allow_control = not bool(data["manual"])
+        ai.allow_control = not bool(data["manual"])
     elif data["type"] == "sync":
         await sync(data)
     elif data["type"] == "info":
@@ -58,11 +83,20 @@ async def proceed_ws(data):
         await connect_camera(data["port"])
     elif data["type"] == "disconnect":
         abadon()
+    elif data["type"] == "modelInfo":
+        await Socket.send({
+            "type": "modelInfo",
+            "model": f"{config.config['ai']['default_model']}",
+            "modelsList": [p.name for p in pathlib.Path("models").glob("*.tflite")]
+        })
+    elif data["type"] == "useModel":
+        config.config['ai']['default_model'] = data["model"]
+        config.update_config()
 
 @app.get("/video")
 async def video_feed():
     return StreamingResponse(
-        hardwareController.camera.generate_frames(),
+        hardware.camera.generate_frames(),
         media_type="multipart/x-mixed-replace; boundary=frame",
         headers={
             "X-Frame-Options": "ALLOWALL"
