@@ -8,10 +8,240 @@ config_pattern = """
   "ai": {
     "default_model": ""
   },
-  "containers": []
+  "containers": [
+        {
+            "id": "1",
+            "name": "Container 1",
+            "ai": {
+                "type": "None",
+                "model": "None"
+            },
+            "color": {
+                "r": {
+                    "min": "0",
+                    "max": "0"
+                },
+                "g": {
+                    "min": "0",
+                    "max": "0"
+                },
+                "b": {
+                    "min": "0",
+                    "max": "0"
+                }
+            },
+            "size": {
+                "width": {
+                    "min": "0",
+                    "max": "0"
+                },
+                "height": {
+                    "min": "0",
+                    "max": "0"
+                }
+            }
+        },
+        
+        {
+            "id": "2",
+            "name": "Container 2",
+            "ai": {
+                "type": "None",
+                "model": "None"
+            },
+            "color": {
+                "r": {
+                    "min": "0",
+                    "max": "0"
+                },
+                "g": {
+                    "min": "0",
+                    "max": "0"
+                },
+                "b": {
+                    "min": "0",
+                    "max": "0"
+                }
+            },
+            "size": {
+                "width": {
+                    "min": "0",
+                    "max": "0"
+                },
+                "height": {
+                    "min": "0",
+                    "max": "0"
+                }
+            }
+        },
+        
+        {
+            "id": "3",
+            "name": "Container 3",
+            "ai": {
+                "type": "None",
+                "model": "None"
+            },
+            "color": {
+                "r": {
+                    "min": "0",
+                    "max": "0"
+                },
+                "g": {
+                    "min": "0",
+                    "max": "0"
+                },
+                "b": {
+                    "min": "0",
+                    "max": "0"
+                }
+            },
+            "size": {
+                "width": {
+                    "min": "0",
+                    "max": "0"
+                },
+                "height": {
+                    "min": "0",
+                    "max": "0"
+                }
+            }
+        },
+        
+        {
+            "id": "4",
+            "name": "Container 4",
+            "ai": {
+                "type": "None",
+                "model": "None"
+            },
+            "color": {
+                "r": {
+                    "min": "0",
+                    "max": "0"
+                },
+                "g": {
+                    "min": "0",
+                    "max": "0"
+                },
+                "b": {
+                    "min": "0",
+                    "max": "0"
+                }
+            },
+            "size": {
+                "width": {
+                    "min": "0",
+                    "max": "0"
+                },
+                "height": {
+                    "min": "0",
+                    "max": "0"
+                }
+            }
+        },
+        
+        {
+            "id": "5",
+            "name": "Container 5",
+            "ai": {
+                "type": "None",
+                "model": "None"
+            },
+            "color": {
+                "r": {
+                    "min": "0",
+                    "max": "0"
+                },
+                "g": {
+                    "min": "0",
+                    "max": "0"
+                },
+                "b": {
+                    "min": "0",
+                    "max": "0"
+                }
+            },
+            "size": {
+                "width": {
+                    "min": "0",
+                    "max": "0"
+                },
+                "height": {
+                    "min": "0",
+                    "max": "0"
+                }
+            }
+        },
+        
+        {
+            "id": "6",
+            "name": "Container 6",
+            "ai": {
+                "type": "None",
+                "model": "None"
+            },
+            "color": {
+                "r": {
+                    "min": "0",
+                    "max": "0"
+                },
+                "g": {
+                    "min": "0",
+                    "max": "0"
+                },
+                "b": {
+                    "min": "0",
+                    "max": "0"
+                }
+            },
+            "size": {
+                "width": {
+                    "min": "0",
+                    "max": "0"
+                },
+                "height": {
+                    "min": "0",
+                    "max": "0"
+                }
+            }
+        },
+        
+        {
+            "id": "7",
+            "name": "Container 7",
+            "ai": {
+                "type": "None",
+                "model": "None"
+            },
+            "color": {
+                "r": {
+                    "min": "0",
+                    "max": "0"
+                },
+                "g": {
+                    "min": "0",
+                    "max": "0"
+                },
+                "b": {
+                    "min": "0",
+                    "max": "0"
+                }
+            },
+            "size": {
+                "width": {
+                    "min": "0",
+                    "max": "0"
+                },
+                "height": {
+                    "min": "0",
+                    "max": "0"
+                }
+            }
+        }
+  ]
 }
 """
-
 config: Any
 
 def read_config():
@@ -23,47 +253,21 @@ def read_config():
         create_config()
         config = json.loads(config_pattern)
 
+
 def update_config():
     global config
     with open("config.json", "w") as write_file:
         json.dump(config, write_file, indent=4)
 
+
 def create_config():
     with open("config.json", "w") as write_file:
         json.dump(config_pattern, write_file)
 
+
 def range_overlap(a, b):
     return a["min"] <= b["max"] and b["min"] <= a["max"]
 
-def check_conflict():
-    containers = config["containers"]
-    conflicts = []
-
-    for i in range(len(containers)):
-        for j in range(i + 1, len(containers)):
-            a = containers[i]
-            b = containers[j]
-
-            if a["ai"]["type"] != b["ai"]["type"]:
-                continue
-            if a["ai"]["model"] != b["ai"]["model"]:
-                continue
-
-            if not range_overlap(a["color"]["r"], b["color"]["r"]):
-                continue
-            if not range_overlap(a["color"]["g"], b["color"]["g"]):
-                continue
-            if not range_overlap(a["color"]["b"], b["color"]["b"]):
-                continue
-
-            if not range_overlap(a["size"]["width"], b["size"]["width"]):
-                continue
-            if not range_overlap(a["size"]["height"], b["size"]["height"]):
-                continue
-
-            conflicts.append((a["id"], b["id"]))
-
-    return conflicts
 
 def find(type_, model, r, g, b, width, height):
     for c in config["containers"]:
@@ -88,12 +292,22 @@ def find(type_, model, r, g, b, width, height):
 
     return None
 
+
 def get_ai_available():
     return [p.name for p in pathlib.Path("models").glob("*.tflite")]
 
+
 def get_ai_classes(model_name):
     with open(f"models/{model_name}.txt", "r") as read_file:
-        return read_file.read().splitlines()
+        result = []
+        for model_class in read_file.read().splitlines():
+            result.append(model_class.split(" ")[1])
+        return result
+
+
+def get_default_model():
+    return config["ai"]["default_model"]
+
 
 def get_container(id_):
     for c in config["containers"]:
@@ -101,9 +315,10 @@ def get_container(id_):
             return c
     return None
 
-def set_container(id_, data):
+
+def set_container(data):
     for c in range(len(config["containers"])):
-        if config["containers"][c]["id"] == id_:
+        if str(config["containers"][c]["id"]) == str(data["id"]):
             config["containers"][c] = data
             break
     update_config()

@@ -108,7 +108,7 @@ class Camera:
     def __del__(self):
         self.camera.release()
 
-    def generate_frames(self):
+    async def generate_frames(self):
         try:
             print("Viewport stream opened")
             while True:
@@ -116,8 +116,7 @@ class Camera:
                 if not success:
                     break
                 else:
-                    result = think(frame)
-                    print(result)
+                    await think(frame)
                     ret, buffer = cv2.imencode('.jpg', frame)
                     frame_bytes = buffer.tobytes()
 
@@ -175,7 +174,7 @@ async def connect_camera(port):
     })
 
 
-def abadon():
+def abandon():
     global machine, camera
 
     if machine:

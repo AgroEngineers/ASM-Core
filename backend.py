@@ -24,7 +24,7 @@ class Socket:
     @classmethod
     def close(cls):
         cls.ws = None
-        abadon()
+        abandon()
 
 def mount_backend(main_app: FastAPI):
     main_app.mount("/api", app)
@@ -33,6 +33,7 @@ def mount_backend(main_app: FastAPI):
 async def websocket_endpoint(ws: WebSocket):
     await ws.accept()
     Socket.ws = ws
+    ai.object_found = False
     try:
         while True:
             await proceed_ws(loads(await ws.receive_text()))
@@ -61,6 +62,7 @@ async def upload_model(
     return {"status": "ok", "name": name}
 
 async def proceed_ws(data):
+    print(data)
     if data["type"] == "mode":
         ai.allow_control = not bool(data["manual"])
     elif data["type"] == "sync":
@@ -82,7 +84,7 @@ async def proceed_ws(data):
     elif data["type"] == "connectCam":
         await connect_camera(data["port"])
     elif data["type"] == "disconnect":
-        abadon()
+        abandon()
     elif data["type"] == "modelInfo":
         await Socket.send({
             "type": "modelInfo",
@@ -98,7 +100,7 @@ async def proceed_ws(data):
             "container": config.get_container(data["id"])
         })
     elif data["type"] == "setContainer":
-        config.set_container(data["id"], data["container"])
+        config.set_container(data["container"])
     elif data["type"] == "containerAiList":
         await Socket.send({
             "type": "containerAiList",
@@ -112,10 +114,13 @@ async def proceed_ws(data):
 
 @app.get("/video")
 async def video_feed():
-    return StreamingResponse(
-        hardware.camera.generate_frames(),
-        media_type="multipart/x-mixed-replace; boundary=frame",
-        headers={
-            "X-Frame-Options": "ALLOWALL"
-        }
-    )
+    if Socket.ws:
+        return StreamingResponse(
+            hardware.camera.generate_frames(),
+            media_type="multipart/x-mixed-replace; boundary=frame",
+            headers={
+                "X-Frame-Options": "ALLOWALL"
+            }
+        )
+    else:
+        return None
