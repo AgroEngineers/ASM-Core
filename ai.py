@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import tensorflow.lite as tflite
+import tflite_runtime.interpreter as tflite
 import asyncio
 
 import backend
