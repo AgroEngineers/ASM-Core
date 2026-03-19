@@ -694,7 +694,7 @@
         RIGHT: 'r'
     });
 
-    const ws = new WebSocket("ws://localhost:8000/api/ws");
+    const ws = new WebSocket(`ws://${window.location.host}/api/ws`);
 
     let isControlsManual = true;
     let motorState = MotorState.STOP;
